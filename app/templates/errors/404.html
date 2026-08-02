@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found — Hello World with AI{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="error-page">
+        <div class="error-code">404</div>
+        <div class="error-message">Oops! The page you're looking for doesn't exist.</div>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">🏠 Back to Home</a>
+    </div>
+</div>
+{% endblock %}
+

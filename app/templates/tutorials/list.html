@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Tutorials — Hello World with AI{% endblock %}
+{% block content %}
+<section class="section" style="padding-bottom:0;">
+    <div class="container">
+        <div class="section-header">
+            <h2>📚 AI Tutorial Engine</h2>
+            <p>Structured courses designed to take you from AI beginner to confident builder.</p>
+        </div>
+        <div class="grid grid-3">
+            {% for item in tutorial_progress %}
+                <a href="{{ url_for('tutorials.tutorial_detail', slug=item.tutorial.slug) }}" class="card card-hover tutorial-card">
+                    <div class="tutorial-icon" style="background: {{ item.tutorial.color }}22; color: {{ item.tutorial.color }};">{{ item.tutorial.icon }}</div>
+                    <div class="flex-between">
+                        <h3>{{ item.tutorial.title }}</h3>
+                        <span class="badge-difficulty badge-{{ item.tutorial.difficulty }}">{{ item.tutorial.difficulty }}</span>
+                    </div>
+                    <p class="text-muted" style="font-size:0.92rem; margin-top:8px;">{{ item.tutorial.description }}</p>
+                    <div class="tutorial-meta">
+                        <span>📖 {{ item.tutorial.lesson_count }} lessons</span>
+                        <span>⏱ {{ item.tutorial.estimated_minutes }} min</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ item.percent }}%;"></div>
+                    </div>
+                    <div class="progress-text mt-1">{{ item.completed }}/{{ item.total }} completed ({{ item.percent }}%)</div>
+                </a>
+            {% else %}
+                <p>No tutorials available yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+

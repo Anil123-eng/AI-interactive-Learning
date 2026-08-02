@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Profile — Hello World with AI{% endblock %}
+{% block content %}
+<section class="section" style="padding-bottom:0;">
+    <div class="container">
+        <div class="grid grid-3">
+            <!-- Profile card -->
+            <div class="card text-center">
+                <span class="avatar" style="width:72px; height:72px; font-size:1.8rem; background: {{ current_user.avatar_color }}; margin:0 auto 12px; display:flex;">{{ current_user.display_name[0]|upper }}</span>
+                <h2>{{ current_user.display_name }}</h2>
+                <p class="text-muted">@{{ current_user.username }}</p>
+                <div class="tutorial-meta" style="justify-content:center;">
+                    <span>⭐ {{ current_user.xp }} XP</span>
+                    <span>🎯 Level {{ current_user.level }}</span>
+                    <span>🔥 {{ current_user.current_streak }} day streak</span>
+                </div>
+                <div class="text-muted mt-2" style="font-size:0.85rem;">Member since {{ current_user.created_at.strftime('%b %Y') }}</div>
+                <a href="{{ url_for('progress.overview') }}" class="btn btn-outline btn-sm mt-3">View Progress</a>
+            </div>
+
+            <!-- Stats -->
+            <div class="card">
+                <h3 class="card-title mb-3">📊 Quick Stats</h3>
+                <div class="activity-item">
+                    <div class="activity-icon">📚</div>
+                    <div class="activity-text"><div class="activity-desc">Lessons Completed</div></div>
+                    <span class="lb-xp">{{ summary.completed_lessons }}</span>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">🏆</div>
+                    <div class="activity-text"><div class="activity-desc">Challenges Solved</div></div>
+                    <span class="lb-xp">{{ summary.challenges_solved }}</span>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">🏅</div>
+                    <div class="activity-text"><div class="activity-desc">Badges Earned</div></div>
+                    <span class="lb-xp">{{ summary.badges_count }}</span>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">🔥</div>
+                    <div class="activity-text"><div class="activity-desc">Longest Streak</div></div>
+                    <span class="lb-xp">{{ summary.longest_streak }} days</span>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">📊</div>
+                    <div class="activity-text"><div class="activity-desc">Overall Course Completion</div></div>
+                    <span class="lb-xp">{{ (summary.completed_lessons / summary.total_lessons * 100) | round(0) | int if summary.total_lessons else 0 }}%</span>
+                </div>
+            </div>
+
+            <!-- Recent activity -->
+            <div class="card">
+                <h3 class="card-title mb-3">🕐 Recent Activity</h3>
+                {% if recent_activity %}
+                    {% for act in recent_activity %}
+                        <div class="activity-item">
+                            <div class="activity-icon">{% if act.activity_type == 'lesson' %}📚{% elif act.activity_type == 'challenge' %}🏆{% elif act.activity_type == 'account' %}🎉{% else %}⚡{% endif %}</div>
+                            <div class="activity-text">
+                                <div class="activity-desc">{{ act.description }}</div>
+                                <div class="activity-time">{{ act.created_at.strftime('%b %d, %I:%M %p') }}</div>
+                            </div>
+                            {% if act.xp_earned %}<span class="activity-xp">+{{ act.xp_earned }} XP</span>{% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No activity yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Badges -->
+        <div class="card mt-4">
+            <h3 class="card-title mb-3">🏅 Achievements</h3>
+            {% if badges %}
+                <div class="badge-grid">
+                    {% for ub in badges %}
+                        <div class="badge-item" title="{{ ub.badge.description }}">
+                            <span class="b-icon">{{ ub.badge.icon }}</span>
+                            <span class="b-name">{{ ub.badge.name }}</span>
+                            <span class="b-date">{{ ub.earned_at.strftime('%b %Y') }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">No badges yet. Complete lessons and challenges to unlock achievements!</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+

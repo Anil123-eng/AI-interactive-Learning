@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ tutorial.title }} — Hello World with AI{% endblock %}
+{% block content %}
+<section class="lesson-header">
+    <div class="container">
+        <nav style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
+            <a href="{{ url_for('tutorials.list_tutorials') }}">Tutorials</a> / <span>{{ tutorial.title }}</span>
+        </nav>
+        <div class="flex-between flex-wrap">
+            <div class="flex">
+                <div class="tutorial-icon" style="font-size:2.5rem; width:64px; height:64px; border-radius:16px; background: {{ tutorial.color }}22; display:flex; align-items:center; justify-content:center;">{{ tutorial.icon }}</div>
+                <div>
+                    <h1>{{ tutorial.title }}</h1>
+                    <p class="text-muted">{{ tutorial.description }}</p>
+                </div>
+            </div>
+            <div style="min-width:200px;">
+                <div class="flex-between">
+                    <span class="text-muted" style="font-size:0.85rem;">Course progress</span>
+                    <span class="progress-text">{{ progress.completed }}/{{ progress.total }} ({{ progress.percent }}%)</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ progress.percent }}%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="lesson-content">
+    <div class="container">
+        <div class="grid" style="grid-template-columns: 240px 1fr;">
+            <div class="toc card">
+                <h4>Course Contents</h4>
+                {% for lesson in tutorial.lessons %}
+                    <a href="{{ url_for('tutorials.lesson_detail', lesson_id=lesson.id) }}" class="flex">
+                        <span>{{ '✅' if lesson.id in completed_ids else '📄' }}</span>
+                        <span>{{ loop.index }}. {{ lesson.title }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+            <div>
+                {% if tutorial.lessons %}
+                    <div class="card">
+                        <h3>Getting Started</h3>
+                        <p class="text-muted mt-1">This course contains {{ tutorial.lesson_count }} lessons. Start with the first lesson and work your way through.</p>
+                        <a href="{{ url_for('tutorials.lesson_detail', lesson_id=tutorial.lessons[0].id) }}" class="btn btn-primary mt-3">Start First Lesson →</a>
+                    </div>
+                {% else %}
+                    <div class="card"><p class="text-muted">No lessons yet.</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

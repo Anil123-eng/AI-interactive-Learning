@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Progress Tracker — Hello World with AI{% endblock %}
+{% block content %}
+<section class="section" style="padding-bottom:0;">
+    <div class="container">
+        <div class="flex-between flex-wrap mb-4">
+            <div>
+                <h1>📊 Progress Tracker</h1>
+                <p class="text-muted">Your learning journey at a glance.</p>
+            </div>
+            <span class="text-muted">You're ranked <strong style="color:var(--primary);">#{{ rank }}</strong> on the leaderboard</span>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="grid grid-4 mb-4">
+            <div class="card stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value">{{ summary.xp }}</div>
+                <div class="stat-label">Total XP</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value">{{ summary.level }}</div>
+                <div class="stat-label">Level</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-value">{{ summary.completed_lessons }}/{{ summary.total_lessons }}</div>
+                <div class="stat-label">Lessons Completed</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-value">{{ summary.challenges_solved }}</div>
+                <div class="stat-label">Challenges Solved</div>
+            </div>
+        </div>
+
+        <!-- Level ring + streak -->
+        <div class="grid grid-3 mb-4">
+            <div class="card text-center">
+                <h3 class="mb-3">Current Level</h3>
+                {% set next_threshold = (summary.level ** 2) * 100 %}
+                {% set prev_threshold = ((summary.level - 1) ** 2) * 100 %}
+                {% set pct = ((summary.xp - prev_threshold) / ((next_threshold - prev_threshold) or 1) * 100) %}
+                <div class="level-ring" style="--pct: {{ pct | round(1) }}%;">
+                    <div class="level-ring-inner">
+                        <div class="level-num">{{ summary.level }}</div>
+                        <div class="level-label">Level</div>
+                    </div>
+                </div>
+                <div class="text-muted">{{ summary.xp }} / {{ next_threshold }} XP to level {{ summary.level + 1 }}</div>
+            </div>
+            <div class="card text-center">
+                <h3 class="mb-3">🔥 Streak</h3>
+                <div class="stat-value" style="font-size:3rem;">{{ summary.streak }}</div>
+                <div class="stat-label">day current streak</div>
+                <div class="text-muted mt-2">Longest streak: <strong>{{ summary.longest_streak }}</strong> days</div>
+            </div>
+            <div class="card text-center">
+                <h3 class="mb-3">🏅 Badges</h3>
+                <div class="stat-value" style="font-size:3rem;">{{ summary.badges_count }}</div>
+                <div class="stat-label">badges earned</div>
+                <a href="{{ url_for('progress.profile') }}" class="btn btn-outline btn-sm mt-3">View profile</a>
+            </div>
+        </div>
+
+        <!-- Activity chart + leaderboard -->
+        <div class="grid grid-2 mb-4">
+            <div class="card">
+                <h3 class="card-title mb-3">📈 XP Activity (Last 14 Days)</h3>
+                <canvas id="activityChart" height="200" style="width:100%; height:200px;"></canvas>
+                <div id="chartEmpty" class="text-muted text-center mt-3" style="display:none;">No activity yet — complete lessons and challenges to see your XP grow!</div>
+            </div>
+            <div class="card">
+                <h3 class="card-title mb-3">🏆 Leaderboard</h3>
+                {% for u in leaderboard %}
+                    <div class="leaderboard-item {{ 'highlight' if u == current_user }}">
+                        <div class="rank {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %}">{{ loop.index }}</div>
+                        <span class="avatar" style="background: {{ u.avatar_color }}">{{ u.display_name[0]|upper }}</span>
+                        <span class="lb-name">{{ u.display_name }}{% if u == current_user %} <em>(you)</em>{% endif %}</span>
+                        <span class="lb-xp">⭐ {{ u.xp }} XP · Lv {{ u.level }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tutorial breakdown -->
+        <div class="card mb-4">
+            <h3 class="card-title mb-3">📚 Tutorial Progress</h3>
+            {% for item in summary.tutorial_data %}
+                <div class="flex-between mb-2">
+                    <a href="{{ url_for('tutorials.tutorial_detail', slug=item.tutorial.slug) }}" class="flex">
+                        <span style="font-size:1.2rem;">{{ item.tutorial.icon }}</span>
+                        <span><strong>{{ item.tutorial.title }}</strong>
+                        <span class="text-muted" style="display:block; font-size:0.8rem;">{{ item.completed }}/{{ item.total }} lessons</span></span>
+                    </a>
+                    <span class="progress-text">{{ item.percent }}%</span>
+                </div>
+                <div class="progress-bar mb-3">
+                    <div class="progress-fill" style="width: {{ item.percent }}%;"></div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Recent activity -->
+        <div class="card">
+            <h3 class="card-title mb-3">🕐 Recent Activity</h3>
+            {% if recent_activity %}
+                {% for act in recent_activity %}
+                    <div class="activity-item">
+                        <div class="activity-icon">{% if act.activity_type == 'lesson' %}📚{% elif act.activity_type == 'challenge' %}🏆{% elif act.activity_type == 'account' %}🎉{% else %}⚡{% endif %}</div>
+                        <div class="activity-text">
+                            <div class="activity-desc">{{ act.description }}</div>
+                            <div class="activity-time">{{ act.created_at.strftime('%b %d, %Y %I:%M %p') }}</div>
+                        </div>
+                        {% if act.xp_earned %}<span class="activity-xp">+{{ act.xp_earned }} XP</span>{% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No activity yet. Get started with a <a href="{{ url_for('tutorials.list_tutorials') }}">tutorial</a>!</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<script>
+    const activityData = {{ activity_chart | tojson }};
+    const canvas = document.getElementById('activityChart');
+    const ctx = canvas.getContext('2d');
+
+    if (activityData && activityData.length > 0) {
+        const w = canvas.width || 600;
+        const h = canvas.height || 200;
+        canvas.width = w;
+        canvas.height = h;
+        ctx.clearRect(0, 0, w, h);
+
+        const maxXp = Math.max(...activityData.map(d => d.xp), 1);
+        const padding = 30;
+        const plotW = w - padding * 2;
+        const plotH = h - padding * 2;
+        const barGap = 6;
+
+        // Bars
+        const barWidth = Math.max((plotW / activityData.length) - barGap, 4);
+        activityData.forEach((d, i) => {
+            const barH = (d.xp / maxXp) * plotH;
+            const x = padding + i * (barWidth + barGap) + barGap / 2;
+            const y = h - padding - barH;
+            const grad = ctx.createLinearGradient(0, y, 0, h - padding);
+            grad.addColorStop(0, '#6366f1');
+            grad.addColorStop(1, '#06b6d4');
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, barWidth, barH);
+
+            // Label (day)
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            const dayLabel = d.day.slice(5);
+            ctx.fillText(dayLabel, x + barWidth / 2, h - padding + 16);
+        });
+
+        // Y-axis label
+        ctx.fillStyle = '#64748b';
+        ctx.font = '10px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('XP earned', padding / 2, padding);
+    } else {
+        document.getElementById('chartEmpty').style.display = 'block';
+        canvas.style.display = 'none';
+    }
+</script>
+{% endblock %}
+

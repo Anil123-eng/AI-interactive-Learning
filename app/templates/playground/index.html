@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block title %}AI Playground — Hello World with AI{% endblock %}
+{% block content %}
+<section class="section" style="padding-bottom:0;">
+    <div class="container">
+        <div class="section-header">
+            <h2>🧪 AI Playground</h2>
+            <p>Hands-on experiments to see AI concepts in action — no setup required!</p>
+        </div>
+
+        <div class="playground-layout">
+            <!-- Sidebar -->
+            <div class="playground-nav">
+                <a href="#chatbot" class="active" data-target="chatbot"><span class="p-icon">💬</span> Chatbot</a>
+                <a href="#sentiment" data-target="sentiment"><span class="p-icon">😊</span> Sentiment Analyzer</a>
+                <a href="#regression" data-target="regression"><span class="p-icon">📈</span> Linear Regression</a>
+                <a href="#perceptron" data-target="perceptron"><span class="p-icon">🧠</span> Perceptron</a>
+            </div>
+
+            <!-- Content -->
+            <div>
+                <!-- Chatbot -->
+                <div id="chatbot" class="card demo-box mb-4">
+                    <h2>💬 Rule-Based Chatbot</h2>
+                    <p class="demo-desc">Ask EduBot anything about AI, machine learning, or how to get started. It uses simple pattern-matching rules — a classic AI technique!</p>
+                    <div class="chat-window" id="chatWindow">
+                        <div class="chat-msg chat-bot">Hello! 👋 I'm EduBot. Ask me about AI, machine learning, neural networks, or Python!</div>
+                    </div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chatInput" class="form-control" placeholder="Ask EduBot something... (e.g., What is AI?)">
+                        <button id="chatSend" class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+
+                <!-- Sentiment -->
+                <div id="sentiment" class="card demo-box mb-4">
+                    <h2>😊 Sentiment Analyzer</h2>
+                    <p class="demo-desc">Type any text and this lexicon-based analyzer will tell you if it's positive, negative, or neutral.</p>
+                    <div class="form-group">
+                        <textarea id="sentimentText" class="form-control" rows="3" placeholder="Type a sentence like: I love learning about AI!">I love learning about AI! It's absolutely amazing!</textarea>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <button id="sentimentBtn" class="btn btn-primary">Analyze Sentiment</button>
+                        <button class="btn btn-outline" onclick="loadSentimentSample()">Try Sample</button>
+                    </div>
+                    <div id="sentimentResult" class="sentiment-result" style="display:none;">
+                        <div class="sentiment-label" id="sentimentLabel"></div>
+                        <div class="sentiment-meter">
+                            <div class="sentiment-marker" id="sentimentMarker" style="left:50%;"></div>
+                        </div>
+                        <div class="text-muted mt-2" style="font-size:0.85rem;">Positive words: <span id="posCount">0</span> · Negative words: <span id="negCount">0</span> · Score: <span id="sentimentScore">0</span></div>
+                    </div>
+                </div>
+
+                <!-- Regression -->
+                <div id="regression" class="card demo-box mb-4">
+                    <h2>📈 Linear Regression</h2>
+                    <p class="demo-desc">Fit a line to your data using least squares — the foundation of many machine learning models!</p>
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label>X values (comma-separated)</label>
+                            <input type="text" id="regX" class="form-control" value="1,2,3,4,5,6,7,8,9,10">
+                        </div>
+                        <div class="form-group">
+                            <label>Y values (comma-separated)</label>
+                            <input type="text" id="regY" class="form-control" value="2.1,4.2,5.9,8.1,9.8,12,13.9,16.2,17.8,20.1">
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <button id="regBtn" class="btn btn-primary">Fit Model</button>
+                        <button class="btn btn-outline" onclick="loadRegressionSample()">Load Sample Data</button>
+                    </div>
+                    <canvas id="regChart" class="regression-chart" width="700" height="280" style="width:100%; height:280px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);"></canvas>
+                    <div id="regResult" class="result-grid"></div>
+                </div>
+
+                <!-- Perceptron -->
+                <div id="perceptron" class="card demo-box mb-4">
+                    <h2>🧠 Perceptron Classifier</h2>
+                    <p class="demo-desc">Train a single-layer neural network (perceptron) to learn the AND or OR logic gates — learning through weights and bias!</p>
+                    <div class="flex flex-wrap mb-3">
+                        <button type="button" class="btn btn-secondary" onclick="trainPerceptron('and')">Train on AND Gate</button>
+                        <button type="button" class="btn btn-secondary" onclick="trainPerceptron('or')">Train on OR Gate</button>
+                    </div>
+                    <div id="percTrainingData" class="mb-2" style="font-size:0.9rem; color:var(--text-muted);">Training data will appear here.</div>
+                    <div id="percResult" class="result-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    /* ---------- Chatbot ---------- */
+    const chatWindow = document.getElementById('chatWindow');
+    const chatInput = document.getElementById('chatInput');
+    const chatSend = document.getElementById('chatSend');
+
+    function addChatMessage(text, sender) {
+        const div = document.createElement('div');
+        div.className = 'chat-msg chat-' + sender;
+        div.textContent = text;
+        chatWindow.appendChild(div);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+        return div;
+    }
+
+    async function sendChat() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+        chatInput.value = '';
+        addChatMessage(message, 'user');
+        const typing = addChatMessage('EduBot is thinking...', 'bot');
+        typing.classList.add('chat-typing');
+        try {
+            const data = await postJSON('/playground/chatbot', { message: message });
+            typing.textContent = data.reply;
+            typing.classList.remove('chat-typing');
+        } catch (err) {
+            typing.textContent = 'Sorry, something went wrong. Please try again.';
+            typing.classList.remove('chat-typing');
+        }
+    }
+
+    chatSend.addEventListener('click', sendChat);
+    chatInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') sendChat(); });
+
+    /* ---------- Sentiment ---------- */
+    const sentimentText = document.getElementById('sentimentText');
+
+    async function analyzeSentiment() {
+        const text = sentimentText.value.trim();
+        if (!text) return;
+        const result = await postJSON('/playground/sentiment', { text: text });
+        document.getElementById('sentimentResult').style.display = 'block';
+        document.getElementById('sentimentLabel').textContent = result.label;
+        document.getElementById('posCount').textContent = result.positive;
+        document.getElementById('negCount').textContent = result.negative;
+        document.getElementById('sentimentScore').textContent = result.score;
+        const pct = (result.score + 1) / 2 * 100;
+        document.getElementById('sentimentMarker').style.left = pct + '%';
+    }
+
+    document.getElementById('sentimentBtn').addEventListener('click', analyzeSentiment);
+
+    async function loadSentimentSample() {
+        const data = await fetch('/playground/data').then(r => r.json());
+        const samples = data.sentiment_samples;
+        sentimentText.value = samples[Math.floor(Math.random() * samples.length)];
+        analyzeSentiment();
+    }
+
+    /* ---------- Regression ---------- */
+    function loadRegressionSample() {
+        fetch('/playground/data').then(r => r.json()).then(data => {
+            document.getElementById('regX').value = data.regression.x.join(',');
+            document.getElementById('regY').value = data.regression.y.join(',');
+        });
+    }
+
+    function drawRegressionChart(result) {
+        const canvas = document.getElementById('regChart');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const predictions = result.predictions;
+        const padding = 40;
+        const w = canvas.width - padding * 2;
+        const h = canvas.height - padding * 2;
+        const maxY = Math.max(...predictions, 0) * 1.1;
+        const minY = Math.min(...predictions, 0) * 1.1;
+
+        // Axes
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding, canvas.height - padding);
+        ctx.lineTo(canvas.width - padding, canvas.height - padding);
+        ctx.stroke();
+
+        // Line
+        ctx.strokeStyle = '#6366f1';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        predictions.forEach((p, i) => {
+            const x = padding + (i / Math.max(predictions.length - 1, 1)) * w;
+            const y = padding + h - ((p - minY) / ((maxY - minY) || 1)) * h;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#64748b';
+        ctx.font = '12px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Predicted y', canvas.width / 2, canvas.height - 8);
+    }
+
+    document.getElementById('regBtn').addEventListener('click', async function () {
+        const x = document.getElementById('regX').value.split(',').map(Number);
+        const y = document.getElementById('regY').value.split(',').map(Number);
+        const result = await postJSON('/playground/regression', { x: x, y: y });
+        if (result.error) {
+            alert(result.error);
+            return;
+        }
+        const grid = document.getElementById('regResult');
+        grid.innerHTML = '';
+        const items = [
+            { label: 'Equation', value: result.equation },
+            { label: 'Slope (m)', value: result.slope },
+            { label: 'Intercept (b)', value: result.intercept },
+            { label: 'R² Score', value: result.r2 },
+        ];
+        items.forEach(item => {
+            const cell = document.createElement('div');
+            cell.className = 'result-cell';
+            cell.innerHTML = `<div class="rc-label">${item.label}</div><div class="rc-value">${item.value}</div>`;
+            grid.appendChild(cell);
+        });
+        drawRegressionChart(result);
+    });
+
+    /* ---------- Perceptron ---------- */
+    async function trainPerceptron(demo) {
+        const result = await postJSON('/playground/perceptron', { demo: demo });
+        if (result.error) {
+            alert(result.error);
+            return;
+        }
+        const data = result.demo_data;
+        document.getElementById('percTrainingData').innerHTML = `
+            <strong>Demo: ${demo.toUpperCase()} Gate</strong> —
+            Features: ${JSON.stringify(data.features.map(f => `[${f}]`))}, Labels: ${JSON.stringify(data.labels)}
+        `;
+        const grid = document.getElementById('percResult');
+        grid.innerHTML = '';
+        const items = [
+            { label: 'Accuracy', value: (result.accuracy * 100).toFixed(1) + '%' },
+            { label: 'Epochs Used', value: result.epochs_used },
+            { label: 'Bias', value: result.bias },
+            { label: 'Predictions', value: JSON.stringify(result.predictions) },
+        ];
+        items.forEach(item => {
+            const cell = document.createElement('div');
+            cell.className = 'result-cell';
+            cell.innerHTML = `<div class="rc-label">${item.label}</div><div class="rc-value" style="font-size:1rem;">${item.value}</div>`;
+            grid.appendChild(cell);
+        });
+    }
+
+    /* Nav active state */
+    document.querySelectorAll('.playground-nav a').forEach(a => {
+        a.addEventListener('click', function () {
+            document.querySelectorAll('.playground-nav a').forEach(x => x.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // Load sample data on page load
+    loadRegressionSample();
+</script>
+{% endblock %}
+

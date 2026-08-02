@@ -1,0 +1,31 @@
+# Render blueprint — one-click deploy of the AI Learning Platform.
+# Push this repo to GitHub and use "Deploy from Blueprint" in Render.
+#
+#   https://render.com -> New -> Blueprint -> select repo
+# Render detects this render.yaml automatically.
+
+services:
+  - type: web
+    name: ai-learning-platform
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ai-learning-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: AUTO_SEED
+        value: "1"
+      - key: FLASK_DEBUG
+        value: "0"
+
+databases:
+  - name: ai-learning-db
+    plan: free
+    databaseName: ai_learning_platform
+    user: ai_learning_user
+

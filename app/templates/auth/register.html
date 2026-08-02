@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Register — Hello World with AI{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+{% block content %}
+<div class="card auth-card">
+    <div class="auth-logo">🤖</div>
+    <h1>Create Your Account</h1>
+    <p class="auth-subtitle">Start your interactive AI learning adventure — it's free!</p>
+    <form method="POST" action="{{ url_for('auth.register') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" class="form-control"
+                   value="{{ username or '' }}" placeholder="ai_learner" minlength="3" required>
+            <div class="form-hint">At least 3 characters.</div>
+        </div>
+        <div class="form-group">
+            <label for="display_name">Display Name (optional)</label>
+            <input type="text" id="display_name" name="display_name" class="form-control"
+                   value="{{ display_name or '' }}" placeholder="AI Learner">
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" class="form-control"
+                   value="{{ email or '' }}" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-control"
+                   placeholder="At least 6 characters" minlength="6" required>
+        </div>
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" class="form-control"
+                   placeholder="Repeat your password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+    </form>
+    <p class="auth-alt">Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
+</div>
+{% endblock %}
+

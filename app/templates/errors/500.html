@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Server Error — Hello World with AI{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="error-page">
+        <div class="error-code">500</div>
+        <div class="error-message">Something went wrong on our end. Please try again later.</div>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">🏠 Back to Home</a>
+    </div>
+</div>
+{% endblock %}
+

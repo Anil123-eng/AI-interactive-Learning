@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{{ challenge.title }} — Challenge Hub{% endblock %}
+{% block content %}
+<section class="section" style="padding-bottom:0;">
+    <div class="container">
+        <nav style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
+            <a href="{{ url_for('challenges.list_challenges') }}">Challenges</a> / <span>{{ challenge.title }}</span>
+        </nav>
+        <div class="flex-between flex-wrap mb-4">
+            <div>
+                <h1>🏆 {{ challenge.title }}</h1>
+                <div class="tutorial-meta">
+                    <span class="badge-difficulty badge-{{ challenge.difficulty }}">{{ challenge.difficulty }}</span>
+                    <span>🏷 {{ challenge.category }}</span>
+                    <span>🏅 {{ challenge.xp_reward }} XP</span>
+                </div>
+            </div>
+            {% if solved %}
+                <span class="badge-difficulty badge-easy">✅ Solved! Great job!</span>
+            {% endif %}
+        </div>
+
+        <div class="challenge-layout">
+            <!-- Left: problem -->
+            <div class="challenge-left">
+                <div class="card mb-4">
+                    <h3>📋 Problem</h3>
+                    <div class="lesson-body mt-2">{{ challenge.description | safe }}</div>
+                </div>
+
+                <div class="card">
+                    <h3>🧪 Test Cases</h3>
+                    <div class="mt-2" id="testCases"></div>
+                    {% if challenge.hints %}
+                        <div class="mt-4">
+                            <h3>💡 Hints</h3>
+                            <ul class="mt-2" style="margin-left:20px;">
+                                {% for hint in challenge.hints %}
+                                    <li class="text-muted" style="margin-bottom:6px;">{{ hint }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right: editor -->
+            <div class="challenge-right">
+                <div class="card">
+                    <div class="flex-between mb-3">
+                        <h3>✍️ Your Solution</h3>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('code').value = {{ challenge.starter_code | tojson }}">Reset</button>
+                    </div>
+                    <textarea id="code" class="code-editor" spellcheck="false" data-challenge-slug="{{ challenge.slug }}">{{ challenge.starter_code }}</textarea>
+                    <div class="flex-between mt-3">
+                        <button id="submitBtn" class="btn btn-success">🚀 Run & Submit</button>
+                        <div id="submitStatus" class="text-muted" style="font-size:0.85rem;"></div>
+                    </div>
+                    <div id="testResults" class="test-results"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    const challengeSlug = {{ challenge.slug | tojson }};
+    const testCases = {{ test_cases_json | safe }};
+    const hints = {{ hints_json | safe }};
+    const csrfToken = getCSRFToken();
+
+    // Render test cases
+    const testContainer = document.getElementById('testCases');
+    if (testContainer) {
+        testCases.forEach((tc, i) => {
+            const div = document.createElement('div');
+            div.className = 'test-row test-pass';
+            div.innerHTML = `<span class="test-icon">🧪</span><span>Test ${i+1}: input(${JSON.stringify(tc.input)}) → expected ${JSON.stringify(tc.expected)}</span>`;
+            testContainer.appendChild(div);
+        });
+    }
+
+    // Auto-grow
+    const codeEl = document.getElementById('code');
+    codeEl.addEventListener('input', () => autoGrow(codeEl));
+    autoGrow(codeEl);
+
+    document.getElementById('submitBtn').addEventListener('click', async function () {
+        const btn = this;
+        const status = document.getElementById('submitStatus');
+        const results = document.getElementById('testResults');
+        btn.disabled = true;
+        btn.textContent = '⏳ Grading...';
+        status.textContent = '';
+        results.innerHTML = '';
+
+        const formData = new FormData();
+        formData.append('code', codeEl.value);
+        formData.append('csrf_token', csrfToken);
+
+        try {
+            const res = await fetch(`/challenges/${challengeSlug}/submit`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrfToken },
+                body: formData,
+            });
+            const data = await res.json();
+
+            // Show test results
+            const passed = data.passed_tests;
+            const total = data.total_tests;
+            results.innerHTML = '';
+
+            // Render each test as pass/fail
+            testCases.forEach((tc, i) => {
+                const div = document.createElement('div');
+                div.className = 'test-row ' + (i < passed ? 'test-pass' : 'test-fail');
+                div.innerHTML = `<span class="test-icon">${i < passed ? '✅' : '❌'}</span><span>Test ${i+1}: ${i < passed ? 'Passed' : 'Failed'}</span>`;
+                results.appendChild(div);
+            });
+
+            if (data.error) {
+                const errDiv = document.createElement('div');
+                errDiv.className = 'test-row test-fail';
+                errDiv.innerHTML = `<span class="test-icon">⚠️</span><span>${data.error}</span>`;
+                results.appendChild(errDiv);
+            }
+
+            if (data.passed) {
+                status.innerHTML = `<span class="text-success" style="font-weight:700;">🎉 All ${total} tests passed! +${data.xp_earned} XP</span>`;
+            } else {
+                status.innerHTML = `<span class="text-danger" style="font-weight:700;">${passed}/${total} passed — keep trying!</span>`;
+            }
+
+            if (data.leveled_up) {
+                status.innerHTML += ` <span style="color:var(--accent);">⭐ Level up!</span>`;
+            }
+
+            // Reload page shortly after success to reflect solved state + new badges
+            if (data.passed) {
+                setTimeout(() => window.location.reload(), 2500);
+            }
+        } catch (err) {
+            status.innerHTML = `<span class="text-danger">⚠️ ${err.message}</span>`;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🚀 Run & Submit';
+        }
+    });
+</script>
+{% endblock %}
+

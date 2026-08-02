@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Hello World with AI — Learn AI Interactively{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+    <div class="container hero-content">
+        <span class="hero-badge">🚀 Interactive AI Learning Platform</span>
+        <h1>Learn Artificial Intelligence the Fun Way</h1>
+        <p class="lead">
+            Structured tutorials, a hands-on AI playground, gamified challenges, and progress tracking
+            — everything you need to go from <strong>zero to AI hero</strong>.
+        </p>
+        <div class="hero-actions">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg">Go to Dashboard →</a>
+                <a href="{{ url_for('tutorials.list_tutorials') }}" class="btn btn-outline btn-lg">Browse Tutorials</a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Get Started Free</a>
+                <a href="{{ url_for('tutorials.list_tutorials') }}" class="btn btn-outline btn-lg">Explore Tutorials</a>
+            {% endif %}
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat"><div class="num">4+</div><div class="label">Tutorial Modules</div></div>
+            <div class="hero-stat"><div class="num">4</div><div class="label">AI Playground Demos</div></div>
+            <div class="hero-stat"><div class="num">∞</div><div class="label">Coding Challenges</div></div>
+            <div class="hero-stat"><div class="num">100%</div><div class="label">Free & Fun</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Everything You Need to Master AI</h2>
+            <p>Four integrated modules designed for beginners — learn, experiment, challenge, and track your growth.</p>
+        </div>
+        <div class="grid grid-4">
+            <div class="card card-hover feature-card">
+                <div class="feature-icon" style="background:#eef2ff; color:#6366f1;">📚</div>
+                <h3>Tutorial Engine</h3>
+                <p>Structured lessons covering AI fundamentals, Machine Learning, Neural Networks, and more.</p>
+                <a href="{{ url_for('tutorials.list_tutorials') }}">Start learning →</a>
+            </div>
+            <div class="card card-hover feature-card">
+                <div class="feature-icon" style="background:#f0f9ff; color:#06b6d4;">🧪</div>
+                <h3>AI Playground</h3>
+                <p>Experiment with a chatbot, sentiment analyzer, linear regression, and a perceptron — live!</p>
+                <a href="{{ url_for('playground.playground_home') }}">Play with AI →</a>
+            </div>
+            <div class="card card-hover feature-card">
+                <div class="feature-icon" style="background:#fffbeb; color:#f59e0b;">🏆</div>
+                <h3>Challenge Hub</h3>
+                <p>Solve real coding challenges with auto-grading, earn XP, and climb the leaderboard.</p>
+                <a href="{{ url_for('challenges.list_challenges') }}">Take a challenge →</a>
+            </div>
+            <div class="card card-hover feature-card">
+                <div class="feature-icon" style="background:#ecfdf5; color:#10b981;">📊</div>
+                <h3>Progress Tracker</h3>
+                <p>Track your XP, level, streaks, badges, and weekly learning activity on your dashboard.</p>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('progress.overview') }}">View progress →</a>
+                {% else %}
+                    <a href="{{ url_for('auth.register') }}">Track progress →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How it works -->
+<section class="section alt">
+    <div class="container">
+        <div class="section-header">
+            <h2>How It Works</h2>
+            <p>Your journey to AI fluency in three simple steps.</p>
+        </div>
+        <div class="grid grid-3">
+            <div class="card text-center">
+                <div style="font-size:2.5rem;">1️⃣</div>
+                <h3 class="mt-2">Learn</h3>
+                <p class="text-muted">Work through beginner-friendly tutorials with clear explanations and real code examples.</p>
+            </div>
+            <div class="card text-center">
+                <div style="font-size:2.5rem;">2️⃣</div>
+                <h3 class="mt-2">Practice</h3>
+                <p class="text-muted">Experiment with live AI demos and apply what you learn by solving coding challenges.</p>
+            </div>
+            <div class="card text-center">
+                <div style="font-size:2.5rem;">3️⃣</div>
+                <h3 class="mt-2">Earn Rewards</h3>
+                <p class="text-muted">Gain XP, level up, unlock badges, and build daily streaks as you progress.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+    <div class="container">
+        <div class="card text-center" style="background: linear-gradient(135deg,#6366f1,#06b6d4); color:#fff; padding:48px;">
+            <h2 style="color:#fff;">Ready to Say "Hello" to AI?</h2>
+            <p style="opacity:0.9; margin:12px 0 24px;">Join now and start your interactive AI learning journey today.</p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-lg" style="background:#fff; color:#6366f1;">Go to Dashboard</a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-lg" style="background:#fff; color:#6366f1;">Create Free Account</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+

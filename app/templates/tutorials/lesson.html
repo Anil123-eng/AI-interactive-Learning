@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ lesson.title }} — {{ tutorial.title }}{% endblock %}
+{% block content %}
+<section class="lesson-header">
+    <div class="container">
+        <nav style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
+            <a href="{{ url_for('tutorials.list_tutorials') }}">Tutorials</a> /
+            <a href="{{ url_for('tutorials.tutorial_detail', slug=tutorial.slug) }}">{{ tutorial.title }}</a> /
+            <span>{{ lesson.title }}</span>
+        </nav>
+        <div class="flex-between flex-wrap">
+            <h1>📖 {{ lesson.title }}</h1>
+            <div class="flex">
+                {% if is_completed %}
+                    <span class="badge-difficulty badge-easy">✅ Completed</span>
+                {% else %}
+                    <span class="badge-difficulty badge-medium">+{{ lesson.xp_reward }} XP on completion</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="lesson-content">
+    <div class="container">
+        <div class="grid" style="grid-template-columns: 1fr 260px;">
+            <div class="card" style="padding:32px;">
+                <div class="lesson-body">
+                    {{ lesson.content | safe }}
+                </div>
+                <div class="lesson-nav">
+                    {% if prev_lesson %}
+                        <a href="{{ url_for('tutorials.lesson_detail', lesson_id=prev_lesson.id) }}" class="btn btn-outline">← {{ prev_lesson.title }}</a>
+                    {% else %}
+                        <span></span>
+                    {% endif %}
+                    {% if not is_completed %}
+                        <form method="POST" action="{{ url_for('tutorials.complete_lesson', lesson_id=lesson.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-success">
+                                {% if next_lesson %}Mark as Complete ✓{% else %}Complete & Finish Course 🎉{% endif %}
+                            </button>
+                        </form>
+                    {% endif %}
+                    {% if next_lesson %}
+                        <a href="{{ url_for('tutorials.lesson_detail', lesson_id=next_lesson.id) }}" class="btn btn-primary">{{ next_lesson.title }} →</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="toc card">
+                <h4>Course Contents</h4>
+                {% for l in tutorial.lessons %}
+                    <a href="{{ url_for('tutorials.lesson_detail', lesson_id=l.id) }}" class="flex {{ 'active' if l.id == lesson.id }}">
+                        <span>{{ '✅' if l.id in completed_ids else ('▶️' if l.id == lesson.id else '📄') }}</span>
+                        <span>{{ loop.index }}. {{ l.title }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
