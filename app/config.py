@@ -44,10 +44,23 @@ class Config:
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_size": 10,
-        "pool_recycle": 280,
+        # Render's managed PostgreSQL can close idle connections. Keep the
+        # local pool small and recycle connections before that can happen.
+        "pool_size": 5,
+        "max_overflow": 2,
+        "pool_timeout": 30,
+        "pool_recycle": 120,
         "pool_pre_ping": True,
     }
+    if SQLALCHEMY_DATABASE_URI.startswith("postgresql"):
+        SQLALCHEMY_ENGINE_OPTIONS["connect_args"] = {
+            "sslmode": "require",
+            "connect_timeout": 10,
+            "keepalives": 1,
+            "keepalives_idle": 30,
+            "keepalives_interval": 10,
+            "keepalives_count": 3,
+        }
 
     # Auto-seed tutorials/challenges/badges when the database is empty (AUTO_SEED=1).
     # Lets a fresh cloud deploy come up fully populated with zero manual steps.
