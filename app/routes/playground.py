@@ -3,14 +3,14 @@ from flask import Blueprint, jsonify, render_template, request
 
 from ..services.ai_playground_service import (
     LinearRegression,
+    MentorChatbot,
     Perceptron,
-    RuleBasedChatbot,
     SentimentAnalyzer,
 )
 
 playground_bp = Blueprint("playground", __name__)
 
-_chatbot = RuleBasedChatbot()
+_chatbot = MentorChatbot()
 _sentiment = SentimentAnalyzer()
 
 

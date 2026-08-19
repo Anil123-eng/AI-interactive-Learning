@@ -89,7 +89,15 @@ DB_NAME=ai_learning_platform
 SECRET_KEY=your-super-secret-key
 FLASK_DEBUG=1
 AUTO_SEED=1
+
+# Optional broad mentor answers in the AI Playground
+OPENAI_API_KEY=your-openai-api-key
+OPENAI_MODEL=gpt-4o-mini
 ```
+
+`OPENAI_API_KEY` is optional. When it is set, EduBot can answer broad mentor
+questions through OpenAI. When it is empty, the built-in offline topic chatbot
+is used instead. Keep the key only in `.env`; never commit it to GitHub.
 
 For **PostgreSQL** (cloud), just set a single var:
 

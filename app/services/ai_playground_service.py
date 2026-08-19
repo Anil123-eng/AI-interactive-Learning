@@ -4,7 +4,11 @@ Provides small, self-contained machine-learning / NLP demos that run
 entirely in-process so students can experiment without external APIs.
 """
 import math
+import json
+import os
 import re
+import urllib.error
+import urllib.request
 
 
 class RuleBasedChatbot:
@@ -72,6 +76,54 @@ class RuleBasedChatbot:
                 # while different questions can receive different explanations.
                 return replies[sum(ord(char) for char in text) % len(replies)]
         return self.FALLBACKS[sum(ord(char) for char in text) % len(self.FALLBACKS)]
+
+
+class MentorChatbot:
+    """Answer broad mentor questions through OpenAI, with an offline fallback."""
+
+    API_URL = "https://api.openai.com/v1/chat/completions"
+    SYSTEM_PROMPT = (
+        "You are EduBot, a patient mentor for an AI learning platform. "
+        "Answer the user's question directly and accurately in simple language. "
+        "Use short sections or bullet points when useful. If the question asks "
+        "for code, provide a small working example and explain it. Never claim "
+        "you performed an action you did not perform."
+    )
+
+    def __init__(self, fallback: RuleBasedChatbot | None = None):
+        self.fallback = fallback or RuleBasedChatbot()
+
+    def respond(self, message: str) -> str:
+        """Return an OpenAI answer when configured, otherwise use local rules."""
+        api_key = os.getenv("OPENAI_API_KEY", "").strip()
+        if not api_key:
+            return self.fallback.respond(message)
+
+        payload = {
+            "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            "messages": [
+                {"role": "system", "content": self.SYSTEM_PROMPT},
+                {"role": "user", "content": message},
+            ],
+            "temperature": 0.3,
+            "max_tokens": 500,
+        }
+        request = urllib.request.Request(
+            os.getenv("OPENAI_API_URL", self.API_URL),
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=20) as response:
+                result = json.loads(response.read().decode("utf-8"))
+            answer = result["choices"][0]["message"]["content"].strip()
+            return answer or self.fallback.respond(message)
+        except (urllib.error.URLError, urllib.error.HTTPError, KeyError, IndexError, ValueError):
+            return self.fallback.respond(message)
 
 
 class SentimentAnalyzer:
