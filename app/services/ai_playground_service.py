@@ -30,6 +30,15 @@ class RuleBasedChatbot:
             "Neural Networks are computing systems inspired by the brain. They consist of layers of "
             "'neurons' that learn patterns from data — the basis of Deep Learning!",
         ]),
+        (r"\b(sql|sql statements?|database queries?|ddl|dml|dql|dcl|tcl)\b", [
+            "SQL statements are commonly grouped into five types: DDL defines database structure "
+            "(CREATE, ALTER, DROP); DML changes data (INSERT, UPDATE, DELETE); DQL retrieves data "
+            "(SELECT); DCL controls permissions (GRANT, REVOKE); and TCL manages transactions "
+            "(COMMIT, ROLLBACK, SAVEPOINT).",
+            "The main SQL statement categories are DDL for database objects, DML for inserting or "
+            "modifying rows, DQL for querying with SELECT, DCL for user permissions, and TCL for "
+            "transactions such as COMMIT and ROLLBACK.",
+        ]),
         (r"\b(python|programming|code|coding)\b", [
             "Python is the most popular language for AI development — simple syntax + powerful libraries like NumPy, PyTorch, and TensorFlow!",
         ]),
