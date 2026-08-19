@@ -1,7 +1,4 @@
 """AI Playground routes - interactive AI demos (Presentation Layer)."""
-import json
-import random
-
 from flask import Blueprint, jsonify, render_template, request
 
 from ..services.ai_playground_service import (
@@ -27,6 +24,8 @@ def chatbot_endpoint():
     """POST {message: string} -> chatbot reply."""
     data = request.get_json(silent=True) or {}
     message = data.get("message", "")
+    if not isinstance(message, str) or len(message) > 1000:
+        return jsonify({"error": "Message must be text and no longer than 1000 characters."}), 400
     reply = _chatbot.respond(message)
     return jsonify({"reply": reply})
 
@@ -36,6 +35,8 @@ def sentiment_endpoint():
     """POST {text: string} -> sentiment analysis result."""
     data = request.get_json(silent=True) or {}
     text = data.get("text", "")
+    if not isinstance(text, str) or len(text) > 5000:
+        return jsonify({"error": "Text must be text and no longer than 5000 characters."}), 400
     result = _sentiment.analyze(text)
     return jsonify(result)
 
@@ -46,13 +47,15 @@ def regression_endpoint():
     data = request.get_json(silent=True) or {}
     x_values = data.get("x", [])
     y_values = data.get("y", [])
+    if not isinstance(x_values, list) or not isinstance(y_values, list):
+        return jsonify({"error": "X and Y must be lists of numbers."}), 400
     try:
         x_values = [float(v) for v in x_values]
         y_values = [float(v) for v in y_values]
     except (TypeError, ValueError):
         return jsonify({"error": "X and Y must be lists of numbers."}), 400
     result = LinearRegression().fit(x_values, y_values)
-    return jsonify(result)
+    return jsonify(result), 400 if "error" in result else 200
 
 
 @playground_bp.route("/playground/perceptron", methods=["POST"])
@@ -74,8 +77,16 @@ def perceptron_endpoint():
         features = data.get("features", [])
         labels = data.get("labels", [])
         try:
+            if not isinstance(features, list) or not isinstance(labels, list):
+                raise ValueError
             features = [[float(v) for v in row] for row in features]
             labels = [int(v) for v in labels]
+            if (
+                not features
+                or any(not row or len(row) != len(features[0]) for row in features)
+                or any(label not in (0, 1) for label in labels)
+            ):
+                raise ValueError
         except (TypeError, ValueError):
             return jsonify({"error": "Invalid features/labels format."}), 400
 
@@ -87,7 +98,7 @@ def perceptron_endpoint():
         predictions = [model.predict(row) for row in features]
         result["predictions"] = predictions
         result["demo_data"] = {"features": features, "labels": labels, "predictions": predictions}
-    return jsonify(result)
+    return jsonify(result), 400 if "error" in result else 200
 
 
 @playground_bp.route("/playground/data", methods=["GET"])

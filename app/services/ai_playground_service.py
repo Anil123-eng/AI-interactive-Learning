@@ -4,63 +4,65 @@ Provides small, self-contained machine-learning / NLP demos that run
 entirely in-process so students can experiment without external APIs.
 """
 import math
-import random
 import re
-import statistics
 
 
 class RuleBasedChatbot:
     """A simple rule-based chatbot demonstrating pattern matching."""
 
     RESPONSES = [
-        ("hello|hi|hey", [
+        (r"\b(hello|hi|hey)\b", [
             "Hello! 👋 I'm EduBot, your AI learning assistant. Ask me about AI, machine learning, or Python!",
             "Hi there! Ready to learn something new about AI today?",
         ]),
-        ("what is ai|what.*artificial intelligence|define ai", [
+        (r"\b(what is|define|meaning of)\b.*\b(ai|artificial intelligence)\b", [
             "AI (Artificial Intelligence) is the simulation of human intelligence in machines "
             "that are programmed to think, learn, and make decisions.",
             "Artificial Intelligence is about building systems that can perform tasks that "
             "normally require human intelligence — like understanding language or recognizing images.",
         ]),
-        ("machine learning|ml", [
+        (r"\b(machine learning|ml|supervised learning|unsupervised learning|reinforcement learning)\b", [
             "Machine Learning is a subset of AI where computers learn patterns from data instead of "
             "being explicitly programmed. Types: Supervised, Unsupervised, and Reinforcement Learning!",
             "ML = Teaching computers to learn from examples. Like teaching a child to recognize cats by showing many cat pictures!",
         ]),
-        ("neural network|deep learning", [
+        (r"\b(neural network|neural networks|deep learning)\b", [
             "Neural Networks are computing systems inspired by the brain. They consist of layers of "
             "'neurons' that learn patterns from data — the basis of Deep Learning!",
         ]),
-        ("python", [
+        (r"\b(python|programming|code|coding)\b", [
             "Python is the most popular language for AI development — simple syntax + powerful libraries like NumPy, PyTorch, and TensorFlow!",
         ]),
-        ("how.*(learn|start).*ai|recommend|where.*begin", [
+        (r"\b(how|where|what)\b.*\b(learn|start|begin|study|course|tutorial)\b|\b(recommend|roadmap)\b", [
             "Great question! Start here: 1) Learn Python basics, 2) Take our AI Fundamentals tutorial, "
             "3) Try the challenges in the Challenge Hub, 4) Experiment in this playground!",
         ]),
-        ("thank|thanks", [
+        (r"\b(thank|thanks|thank you)\b", [
             "You're welcome! 🎉 Keep learning and don't forget to check out the Challenge Hub.",
             "Happy to help! Learning AI is a journey — you're doing great!",
         ]),
-        ("(bye|goodbye|see you)", [
+        (r"\b(bye|goodbye|see you)\b", [
             "Goodbye! 👋 Come back soon to continue your AI journey!",
         ]),
     ]
 
     FALLBACKS = [
-        "Interesting question! I'm still learning — try asking about AI, machine learning, or neural networks.",
-        "Hmm, I don't know that one yet. Ask me about AI basics, Python, or how to get started learning!",
+        "I don't have a lesson on that exact topic yet. Try asking about AI, machine learning, Python, or neural networks.",
+        "That is outside my current offline knowledge. I can explain the tutorials, coding challenges, and the AI concepts covered here.",
     ]
 
     def respond(self, message: str) -> str:
-        text = message.lower().strip()
+        if not isinstance(message, str):
+            return "Please send your question as text. 😊"
+        text = re.sub(r"\s+", " ", message.lower()).strip()
         if not text:
             return "Please type a message so I can help you! 😊"
         for pattern, replies in self.RESPONSES:
             if re.search(pattern, text):
-                return random.choice(replies)
-        return random.choice(self.FALLBACKS)
+                # Rotate by message content so repeated requests are not random,
+                # while different questions can receive different explanations.
+                return replies[sum(ord(char) for char in text) % len(replies)]
+        return self.FALLBACKS[sum(ord(char) for char in text) % len(self.FALLBACKS)]
 
 
 class SentimentAnalyzer:

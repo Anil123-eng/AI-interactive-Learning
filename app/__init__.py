@@ -71,18 +71,15 @@ def create_app(config_name: str = "development") -> Flask:
     with app.app_context():
         db.create_all()
 
-        # Optional: auto-seed when the database is empty (AUTO_SEED=1).
-        # Lets a fresh cloud deploy come up fully populated with no manual steps.
+        # Optional: auto-seed missing content (AUTO_SEED=1). Each seed function
+        # is idempotent, so this also repairs a partially seeded database.
         if app.config.get("AUTO_SEED"):
-            from .models.tutorial import Tutorial
+            from seed import seed_badges, seed_challenges, seed_tutorials
 
-            if Tutorial.query.first() is None:
-                from seed import seed_badges, seed_challenges, seed_tutorials
-
-                seed_tutorials()
-                seed_challenges()
-                seed_badges()
-                app.logger.info("Database auto-seeded with tutorials, challenges & badges.")
+            seed_tutorials()
+            seed_challenges()
+            seed_badges()
+            app.logger.info("Database checked and missing content was seeded.")
 
     return app
 

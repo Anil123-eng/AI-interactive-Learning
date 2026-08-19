@@ -14,12 +14,12 @@ app = create_app()
 
 if __name__ == "__main__":
     if "--prod" in sys.argv or os.getenv("APP_ENV", "").lower() == "production":
-        # Production: serve with Waitress (threaded, stable, internet-safe)
+        # Local production: serve only on this computer.
         from waitress import serve
 
-        print("🚀 Serving in PRODUCTION mode with Waitress on http://0.0.0.0:5000")
-        serve(app, host="0.0.0.0", port=5000, threads=8)
+        print("🚀 Serving locally in PRODUCTION mode with Waitress on http://127.0.0.1:5000")
+        serve(app, host="127.0.0.1", port=5000, threads=8)
     else:
-        # Development: Flask debug server (autoreload + debugger)
-        app.run(debug=True, host="0.0.0.0", port=5000)
+        # Local development: Flask debug server (autoreload + debugger)
+        app.run(debug=True, host="127.0.0.1", port=5000)
 

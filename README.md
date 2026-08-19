@@ -2,7 +2,13 @@
 
 > **Interactive AI Learning Platform** — Learn Artificial Intelligence the fun way with structured tutorials, a hands-on AI playground, gamified challenges, and progress tracking.
 
-## 🌐 Make It Publicly Accessible on Any Device
+## 💻 Localhost-only use
+
+This project is configured to run only on your computer at
+`http://127.0.0.1:5000`. Do **not** run `go_public.py` or deploy to Render if
+you want the application to remain private.
+
+## 🌐 Public deployment (optional)
 
 > ⚠️ The permanently hosted Render URL was **suspended by its owner**. The fastest way to get the app live on **any device** again is the one-command helper below.
 
@@ -46,7 +52,7 @@ The project is fully configured for a permanent deploy on Render (see `render.ya
 
 ## 🚀 Quick Start (Local Development)
 
-> The steps below are for running the app locally on your own machine. To make it public on any device, use `python go_public.py` (see above).
+> The steps below run the app locally on your own machine.
 
 ### Prerequisites
 - **Python 3.12+**
@@ -82,6 +88,7 @@ DB_PASSWORD=your_password
 DB_NAME=ai_learning_platform
 SECRET_KEY=your-super-secret-key
 FLASK_DEBUG=1
+AUTO_SEED=1
 ```
 
 For **PostgreSQL** (cloud), just set a single var:
@@ -97,7 +104,7 @@ SECRET_KEY=your-super-secret-key
 CREATE DATABASE ai_learning_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-### 5. Seed the data (tutorials, challenges, badges)
+### 5. Seed the data (optional when `AUTO_SEED=1`)
 
 ```bash
 python seed.py
@@ -209,4 +216,4 @@ Built with ❤️ for curious minds. Made for learning and experimentation.
 
 ---
 
-🚀 **Make it live on any device: `python go_public.py`**
+For localhost-only use, do not run `go_public.py`.

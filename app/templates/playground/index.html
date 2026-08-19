@@ -96,6 +96,11 @@
     const chatInput = document.getElementById('chatInput');
     const chatSend = document.getElementById('chatSend');
 
+    function showPlaygroundError(error) {
+        const message = error && error.message ? error.message : 'The request could not be completed.';
+        window.alert(message);
+    }
+
     function addChatMessage(text, sender) {
         const div = document.createElement('div');
         div.className = 'chat-msg chat-' + sender;
@@ -117,7 +122,7 @@
             typing.textContent = data.reply;
             typing.classList.remove('chat-typing');
         } catch (err) {
-            typing.textContent = 'Sorry, something went wrong. Please try again.';
+            typing.textContent = err.message || 'Sorry, something went wrong. Please try again.';
             typing.classList.remove('chat-typing');
         }
     }
@@ -131,14 +136,18 @@
     async function analyzeSentiment() {
         const text = sentimentText.value.trim();
         if (!text) return;
-        const result = await postJSON('/playground/sentiment', { text: text });
-        document.getElementById('sentimentResult').style.display = 'block';
-        document.getElementById('sentimentLabel').textContent = result.label;
-        document.getElementById('posCount').textContent = result.positive;
-        document.getElementById('negCount').textContent = result.negative;
-        document.getElementById('sentimentScore').textContent = result.score;
-        const pct = (result.score + 1) / 2 * 100;
-        document.getElementById('sentimentMarker').style.left = pct + '%';
+        try {
+            const result = await postJSON('/playground/sentiment', { text: text });
+            document.getElementById('sentimentResult').style.display = 'block';
+            document.getElementById('sentimentLabel').textContent = result.label;
+            document.getElementById('posCount').textContent = result.positive;
+            document.getElementById('negCount').textContent = result.negative;
+            document.getElementById('sentimentScore').textContent = result.score;
+            const pct = (result.score + 1) / 2 * 100;
+            document.getElementById('sentimentMarker').style.left = pct + '%';
+        } catch (err) {
+            showPlaygroundError(err);
+        }
     }
 
     document.getElementById('sentimentBtn').addEventListener('click', analyzeSentiment);
@@ -201,7 +210,13 @@
     document.getElementById('regBtn').addEventListener('click', async function () {
         const x = document.getElementById('regX').value.split(',').map(Number);
         const y = document.getElementById('regY').value.split(',').map(Number);
-        const result = await postJSON('/playground/regression', { x: x, y: y });
+        let result;
+        try {
+            result = await postJSON('/playground/regression', { x: x, y: y });
+        } catch (err) {
+            showPlaygroundError(err);
+            return;
+        }
         if (result.error) {
             alert(result.error);
             return;
@@ -225,7 +240,13 @@
 
     /* ---------- Perceptron ---------- */
     async function trainPerceptron(demo) {
-        const result = await postJSON('/playground/perceptron', { demo: demo });
+        let result;
+        try {
+            result = await postJSON('/playground/perceptron', { demo: demo });
+        } catch (err) {
+            showPlaygroundError(err);
+            return;
+        }
         if (result.error) {
             alert(result.error);
             return;
