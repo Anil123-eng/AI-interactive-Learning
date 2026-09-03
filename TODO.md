@@ -13,7 +13,6 @@
 - [x] Step 9: Build templates & static frontend (HTML/CSS/JS)
 - [x] Step 10: Seed data (tutorials, lessons, challenges, badges)
 - [x] Step 11: End-to-end testing & launch
-- [x] Step 12: Cloud deployment preparation
 
 ## Pending Fixes (in progress)
 

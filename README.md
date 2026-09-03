@@ -5,36 +5,7 @@
 ## 💻 Localhost-only use
 
 This project is configured to run only on your computer at
-`http://127.0.0.1:5000`. Do **not** run `go_public.py` or deploy to Render if
-you want the application to remain private.
-
-## 🌐 Public deployment (optional)
-
-> ⚠️ The permanently hosted Render URL was **suspended by its owner**. The fastest way to get the app live on **any device** again is the one-command helper below.
-
-### Option A — One-command public URL (no account needed) ⭐
-
-Run the included helper script to start the app and open a free **Cloudflare Quick Tunnel**:
-
-```bash
-python go_public.py
-```
-
-This will:
-1. Start the app locally (production mode) on `http://localhost:5000`
-2. Automatically download `cloudflared.exe` (if missing)
-3. Free Cloudflare Quick Tunnel — **no account or login required**
-4. Print a public HTTPS URL like `https://<random>.trycloudflare.com`
-
-Open that URL on your **phone, tablet, laptop, or any device** — it works anywhere in the world. Share it with anyone.
-
-> **Note:** The Quick Tunnel URL is temporary — it changes every time you restart `go_public.py`. For a permanent URL, see **Option B** below.
-
-### Option B — Permanent public URL (Render)
-
-The project is fully configured for a permanent deploy on Render (see `render.yaml` and `DEPLOYMENT.md`). Push to GitHub and deploy via Render's Blueprint to get a permanent URL such as `https://<your-service>.onrender.com`.
-
-> The previous deployment was at `https://ai-learning-platform.onrender.com` but was suspended. You can re-create it by redeploying.
+`http://127.0.0.1:5000`.
 
 ---
 
@@ -56,7 +27,7 @@ The project is fully configured for a permanent deploy on Render (see `render.ya
 
 ### Prerequisites
 - **Python 3.12+**
-- **MySQL** (local development) — or set `DATABASE_URL` for PostgreSQL (cloud)
+- **MySQL** (local development)
 
 ### 1. Set up the virtual environment
 
@@ -99,13 +70,6 @@ OPENAI_MODEL=gpt-4o-mini
 questions through OpenAI. When it is empty, the built-in offline topic chatbot
 is used instead. Keep the key only in `.env`; never commit it to GitHub.
 
-For **PostgreSQL** (cloud), just set a single var:
-
-```env
-DATABASE_URL=postgresql://user:pass@host:5432/dbname
-SECRET_KEY=your-super-secret-key
-```
-
 ### 4. Create the database
 
 ```sql
@@ -132,22 +96,6 @@ Open **[http://localhost:5000](http://localhost:5000)** in your browser.
 
 ---
 
-## 🌐 Deploying Your Own Copy (Render)
-
-1. Push this repo to GitHub.
-2. Go to [render.com](https://render.com) → **New** → **Blueprint**.
-3. Connect your GitHub account and select the repo.
-4. Render auto-detects `render.yaml` and provisions:
-   - **Web Service** (starts automatically)
-   - **PostgreSQL Database** (`ai-learning-db`, free tier)
-5. Click **Apply** — your app goes live at `https://<your-service>.onrender.com` in ~3 minutes.
-
-> The free tier **auto-seeds** tutorials, challenges, and badges on first boot (`AUTO_SEED=1`), so your app comes up fully populated with zero manual steps.
-
-See **[DEPLOYMENT.md](DEPLOYMENT.md)** for full deploy instructions (Render, Railway, PythonAnywhere).
-
----
-
 ## 🏗️ Project Structure
 
 ```
@@ -171,10 +119,9 @@ ai-learning-platform/
 │   ├── static/              # CSS / JS / images
 │   └── templates/           # Jinja2 HTML templates
 ├── run.py                   # Entry point (dev / production)
-├── wsgi.py                  # WSGI entry point (gunicorn / waitress)
+├── wsgi.py                  # WSGI entry point (Waitress)
 ├── seed.py                  # Seed tutorials, challenges, badges
-├── render.yaml              # Render one-click blueprint
-├── Procfile                 # Render / Railway / Heroku process definition
+├── Procfile                 # Process definition
 ├── runtime.txt              # Python version pin
 └── requirements.txt         # Python dependencies
 ```
@@ -197,7 +144,6 @@ python verify_fixes.py     # Verify resolved bugs
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
-| `DATABASE_URL` | Cloud | _(empty)_ | Full connection string (PostgreSQL / MySQL) |
 | `SECRET_KEY` | Yes | `dev-secret-key-change-me` | Flask session signing |
 | `AUTO_SEED` | No | `0` | Auto-seed DB on first boot (`1` = enabled) |
 | `FLASK_DEBUG` | No | `0` | Debug mode (`1` = on, `0` = off) |
@@ -212,8 +158,8 @@ python verify_fixes.py     # Verify resolved bugs
 ## 🛡️ Tech Stack
 
 - **Backend:** Python · Flask · Flask-SQLAlchemy · Flask-Login · Flask-WTF
-- **Database:** MySQL (local) · PostgreSQL (cloud)
-- **Servers:** Waitress (local prod) · Gunicorn (cloud)
+- **Database:** MySQL (local)
+- **Server:** Waitress
 - **Frontend:** HTML · CSS · JavaScript (Jinja2 templates)
 
 ---
@@ -224,4 +170,4 @@ Built with ❤️ for curious minds. Made for learning and experimentation.
 
 ---
 
-For localhost-only use, do not run `go_public.py`.
+This project is intended for localhost-only use.

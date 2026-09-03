@@ -7,14 +7,6 @@ cryptography==43.0.1
 Werkzeug==3.0.4
 python-dotenv==1.0.1
 
-# --- Production WSGI servers ---
-# gunicorn: used on Linux cloud hosts (Render, Railway, Heroku, Fly.io)
-# waitress: cross-platform production server (used by `python run.py --prod`)
-gunicorn==22.0.0
+# --- Local production server ---
 waitress==3.0.0
-
-# --- PostgreSQL driver ---
-# Free cloud tiers (Render/Railway) commonly provide PostgreSQL.
-# Local development can keep using MySQL via PyMySQL.
-psycopg2-binary==2.9.9
 

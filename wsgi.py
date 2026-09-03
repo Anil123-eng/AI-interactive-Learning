@@ -1,8 +1,7 @@
-"""WSGI entry point for production servers (gunicorn, waitress, etc.).
+"""WSGI entry point for the local Waitress production server.
 
 Usage:
-    gunicorn wsgi:app          # Linux / cloud hosts
-    waitress-serve wsgi:app    # Windows / local production
+    waitress-serve wsgi:app
 """
 from app import create_app
 

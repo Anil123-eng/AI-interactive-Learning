@@ -16,13 +16,7 @@ class Config:
     DEBUG = os.getenv("FLASK_DEBUG", "0") == "1"
     TESTING = False
 
-    # ------------------------------------------------------------------
-    # Database
-    # Cloud deployment: set DATABASE_URL to your provider's connection
-    # string (PostgreSQL / MySQL). When DATABASE_URL is empty, fall back
-    # to the individual DB_* variables for local MySQL development.
-    # ------------------------------------------------------------------
-    DATABASE_URL = os.getenv("DATABASE_URL", "")
+    # Local MySQL database
     DB_HOST = os.getenv("DB_HOST", "localhost")
     DB_PORT = os.getenv("DB_PORT", "3306")
     DB_USER = os.getenv("DB_USER", "root")
@@ -30,40 +24,22 @@ class Config:
     DB_NAME = os.getenv("DB_NAME", "ai_learning_platform")
 
     # URL-encode password so special characters (@, #, etc.) don't break the URI
-    SQLALCHEMY_DATABASE_URI = DATABASE_URL or (
+    SQLALCHEMY_DATABASE_URI = (
         f"mysql+pymysql://{DB_USER}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
         "?charset=utf8mb4"
     )
-    # Normalize common URL schemes so SQLAlchemy 2.x accepts them:
-    #   postgres://  -> postgresql://     (Render/Railway connection strings)
-    #   mysql://     -> mysql+pymysql://  (add the driver if missing)
-    if SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
-        SQLALCHEMY_DATABASE_URI = "postgresql://" + SQLALCHEMY_DATABASE_URI[len("postgres://"):]
-    elif SQLALCHEMY_DATABASE_URI.startswith("mysql://"):
-        SQLALCHEMY_DATABASE_URI = "mysql+pymysql://" + SQLALCHEMY_DATABASE_URI[len("mysql://"):]
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
-        # Render's managed PostgreSQL can close idle connections. Keep the
-        # local pool small and recycle connections before that can happen.
+        # Keep the local pool small and recycle connections periodically.
         "pool_size": 5,
         "max_overflow": 2,
         "pool_timeout": 30,
         "pool_recycle": 120,
         "pool_pre_ping": True,
     }
-    if SQLALCHEMY_DATABASE_URI.startswith("postgresql"):
-        SQLALCHEMY_ENGINE_OPTIONS["connect_args"] = {
-            "sslmode": "require",
-            "connect_timeout": 10,
-            "keepalives": 1,
-            "keepalives_idle": 30,
-            "keepalives_interval": 10,
-            "keepalives_count": 3,
-        }
-
     # Auto-seed tutorials/challenges/badges when the database is empty (AUTO_SEED=1).
-    # Lets a fresh cloud deploy come up fully populated with zero manual steps.
+    # Lets a fresh local database come up fully populated with zero manual steps.
     AUTO_SEED = os.getenv("AUTO_SEED", "0") == "1"
 
     # Session & security
